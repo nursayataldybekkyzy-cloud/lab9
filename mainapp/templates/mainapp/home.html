@@ -1,0 +1,17 @@
+{% extends 'mainapp/base.html' %}
+
+{% block content %}
+
+<h2>Categories</h2>
+
+<div class="category-list">
+    {% for c in categories %}
+        <a href="{% url 'catalog_by_category' c.id %}">
+            {{ c.name }}
+        </a>
+    {% empty %}
+        <p>Категория жоқ</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

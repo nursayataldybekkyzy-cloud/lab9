@@ -1,0 +1,27 @@
+{% extends 'mainapp/base.html' %}
+
+{% block content %}
+<div class="container-content product-detail">
+    <h2>{{ product.name }}</h2>
+    <p><strong>Price:</strong> {{ product.price }} KZT</p>
+    <p><strong>Stock:</strong> {{ product.stock }}</p>
+
+    <h3>Reviews:</h3>
+    {% if reviews %}
+        <div class="reviews">
+            {% for r in reviews %}
+                <div class="comment">
+                    <p>{{ r.text }}</p>
+                    <small>Rating: {{ r.rating }}/5</small>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Әзірге пікірлер жоқ, бірінші болып пікір қалдырыңыз!</p>
+    {% if user.is_authenticated %}
+    <a href="{% url 'add_review' product.id %}">Пікір қалдыру</a>
+    {% else %}
+    <p>Пікір қалдыру үшін кіріңіз</p>
+    {% endif %}
+</div>
+{% endblock %}

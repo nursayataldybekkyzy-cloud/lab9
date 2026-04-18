@@ -1,0 +1,12 @@
+Category.objects.create(...)
+
+Product.objects.create(...)
+
+Product.objects.filter(price__gte=10000, name__icontains="book")
+
+Product.objects.all().order_by('-price')
+
+Product.objects.filter(stock__lt=20).update(stock=50)
+
+Product.objects.filter(price__lt=1000).delete()
+Product.objects.filter(name="BookA").update(price=20000)

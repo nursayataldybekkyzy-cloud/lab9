@@ -1,20 +1,92 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from .models import Category, Product, Review
+from .forms import CategoryForm, ProductForm, ReviewForm  
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+ 
+def register_view(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserCreationForm()
 
-# Басты бет
-def index(request):
-    return render(request, 'mainapp/index.html')
+    return render(request, 'mainapp/register.html', {'form': form})
 
-# Өзіңіз туралы бет
-def about(request):
-    return render(request, 'mainapp/about.html')
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
-# Динамикалық жоба беті
-def project_detail(request, project_id):
-    return render(request, 'mainapp/project_detail.html', {'project_id': project_id})
+        user = authenticate(request, username=username, password=password)
 
-# Техникалық бет (HttpResponse)
-def info(request):
-    user_agent = request.META.get('HTTP_USER_AGENT', 'unknown')
-    ip_address = request.META.get('REMOTE_ADDR', 'unknown')
-    return HttpResponse(f"<h1>Пайдаланушы туралы ақпарат</h1><p>IP: {ip_address}, User-Agent: {user_agent}</p>")
+        if user:
+            login(request, user)
+            return redirect('home')
+        else:
+            return render(request, 'mainapp/login.html', {
+                'error': "Қате логин немесе пароль"
+            })
+
+    return render(request, 'mainapp/login.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
+
+def home(request):
+    categories = Category.objects.all()
+    return render(request, 'mainapp/home.html', {'categories': categories})
+
+def catalog(request):
+    products = Product.objects.all()
+    return render(request, 'mainapp/catalog.html', {'products': products})
+
+def catalog_by_category(request, category_id):
+    products = Product.objects.filter(category_id=category_id)
+    return render(request, 'mainapp/catalog.html', {'products': products})
+
+def product_detail(request, product_id):
+    product = Product.objects.get(id=product_id)
+    reviews = product.review_set.all()
+    return render(request, 'mainapp/product_detail.html', {
+        'product': product,
+        'reviews': reviews
+    })
+
+def add_category(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+    else:
+        form = CategoryForm()
+    return render(request, 'mainapp/add_category.html', {'form': form})
+
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('catalog')
+    else:
+        form = ProductForm()
+    return render(request, 'mainapp/add_product.html', {'form': form})
+
+def add_review(request, product_id):
+    product = Product.objects.get(id=product_id)
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.product = product
+            review.save()
+            return redirect('product_detail', product_id=product.id)
+    else:
+        form = ReviewForm()
+    return render(request, 'mainapp/add_review.html', {'form': form, 'product': product})

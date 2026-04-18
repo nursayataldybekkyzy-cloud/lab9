@@ -1,0 +1,17 @@
+{% extends 'mainapp/base.html' %}
+
+{% block content %}
+<div class="container-content">
+    <h2>Products</h2>
+    <div class="products">
+        {% for p in products %}
+            <div class="product">
+                <a href="{% url 'product_detail' p.id %}">
+                    <h3>{{ p.name }}</h3>
+                </a>
+                <p>{{ p.price }} KZT</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
